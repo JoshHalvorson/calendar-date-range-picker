@@ -2,6 +2,8 @@
 
 I made this calendar picker for work and thought it'd make an excellent standalone view, this is also my first published library so if you feel like it, please leave any feedback/issues, or submit a PR if you add something cool! There's definitely some things I want to add in the future and plan on updating this a bit. Thanks for checking it out!
 
+[![](https://jitpack.io/v/JoshHalvorson/calendar-date-range-picker.svg)](https://jitpack.io/#JoshHalvorson/calendar-date-range-picker)
+
 ## Usage
 
 ### Installation
@@ -83,3 +85,13 @@ Most of the attributes for the calendar are for changing the colors, almost ever
     app:nextMonthButtonIcon="@drawable/..."
     app:previousMonthButtonIcon="@drawable/..." />
 ```
+
+## Images
+
+Day mode            |  
+:-------------------------:|
+ <img src="https://i.imgur.com/6ODEBrn.png" width="300">   <img src="https://i.imgur.com/xAjuITC.png" width="300"> | 
+ 
+ Night mode            |  
+:-------------------------:|
+ <img src="https://i.imgur.com/3OVPrfx.png" width="300"> <img src="https://i.imgur.com/Zw7l8Ee.png" width="300"> | 
