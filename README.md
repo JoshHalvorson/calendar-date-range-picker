@@ -2,6 +2,8 @@
 
 I made this calendar picker for work and thought it'd make an excellent standalone view, this is also my first published library so if you feel like it, please leave any feedback/issues, or submit a PR if you add something cool! There's definitely some things I want to add in the future and plan on updating this a bit. Thanks for checking it out!
 
+UI by [Sabrina Hong](https://www.linkedin.com/in/uiuxsabrina)
+
 [![](https://jitpack.io/v/JoshHalvorson/calendar-date-range-picker.svg)](https://jitpack.io/#JoshHalvorson/calendar-date-range-picker)
 
 ## Usage
