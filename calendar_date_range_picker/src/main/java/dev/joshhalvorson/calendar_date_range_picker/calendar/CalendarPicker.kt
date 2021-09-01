@@ -60,6 +60,8 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     var dateRangeTextColor: Int? = null
     var daysOfWeekTextColor: Int? = null
     var eventDotColor: Int? = null
+    var eventDotColorWhenHighlighted: Int? = null
+    var eventDotColorWhenSelected: Int? = null
     var previousMonthButtonIcon: Drawable? = null
     var nextMonthButtonIcon: Drawable? = null
 
@@ -163,6 +165,14 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         )
         eventDotColor = attributes.getColor(
             R.styleable.CalendarPicker_eventDotColor,
+            ResourcesCompat.getColor(resources, R.color.grey_two, null)
+        )
+        eventDotColorWhenHighlighted = attributes.getColor(
+            R.styleable.CalendarPicker_eventDotColorWhenHighlighted,
+            ResourcesCompat.getColor(resources, R.color.grey_two, null)
+        )
+        eventDotColorWhenSelected = attributes.getColor(
+            R.styleable.CalendarPicker_eventDotColorWhenSelected,
             ResourcesCompat.getColor(resources, R.color.grey_two, null)
         )
     }
@@ -479,6 +489,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                         eventDotColor?.let { color ->
                             it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                         }
+                        eventDotColorWhenSelected?.let { color ->
+                            it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                        }
                     }
                 }
 
@@ -508,6 +521,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
                         if (tvsWithEvent.contains(tv.text.toString())) {
                             eventDotColor?.let { color ->
+                                it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                            }
+                            eventDotColorWhenSelected?.let { color ->
                                 it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                             }
                         }
@@ -547,6 +563,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                         eventDotColor?.let { color ->
                             it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                         }
+                        eventDotColorWhenSelected?.let { color ->
+                            it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                        }
                     }
                 }
 
@@ -577,6 +596,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
                         if (tvsWithEvent.contains(tv.text.toString())) {
                             eventDotColor?.let { color ->
+                                it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                            }
+                            eventDotColorWhenSelected?.let { color ->
                                 it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                             }
                         }
@@ -626,6 +648,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
             if (tvsWithEvent.contains(tv.text.toString())) {
                 eventDotColor?.let { color ->
+                    it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                }
+                eventDotColorWhenHighlighted?.let { color ->
                     it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                 }
             }

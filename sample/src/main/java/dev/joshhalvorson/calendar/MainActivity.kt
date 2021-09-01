@@ -2,12 +2,10 @@ package dev.joshhalvorson.calendar
 
 import android.graphics.Color
 import android.icu.text.DateFormat
-import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dev.joshhalvorson.calendar.databinding.ActivityMainBinding
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +25,8 @@ class MainActivity : AppCompatActivity() {
         )
 
         binding.calendarPicker.eventDotColor = Color.CYAN
+        binding.calendarPicker.eventDotColorWhenSelected = Color.RED
+        binding.calendarPicker.eventDotColorWhenHighlighted = Color.GREEN
         binding.calendarPicker.initCalendar()
 
         binding.getDateRangeButton.setOnClickListener {
@@ -35,7 +35,11 @@ class MainActivity : AppCompatActivity() {
             if (selectedDates != null) {
                 val firstDate = DateFormat.getDateInstance().format(Date(selectedDates.first))
                 val secondDate = DateFormat.getDateInstance().format(Date(selectedDates.second))
-                Toast.makeText(applicationContext, "Date range from $firstDate to $secondDate", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    applicationContext,
+                    "Date range from $firstDate to $secondDate",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
