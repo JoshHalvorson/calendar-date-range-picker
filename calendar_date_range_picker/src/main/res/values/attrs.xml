@@ -6,6 +6,7 @@
         <attr name="firstSelectedDateTextColor" format="color"/>
         <attr name="secondSelectedDateTextColor" format="color"/>
         <attr name="selectedDateCircleColor" format="color"/>
+        <attr name="eventDotColor" format="color"/>
         <attr name="highlightedDatesBackgroundColor" format="color"/>
         <attr name="highlightedDatesTextColor" format="color"/>
         <attr name="titleColor" format="color"/>

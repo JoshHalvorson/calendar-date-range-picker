@@ -57,6 +57,26 @@ binding.getDateRangeButton.setOnClickListener {
 
 This will return a ```Pair<Long, Long>``` with the two dates in millis for you to convert however you like.
 
+You can also adjust the attributes through code, just make sure you call `calendar.initCalendar()` to apply your changes to the view!
+
+```Kotlin
+binding.calendarPicker.eventDotColor = Color.CYAN
+binding.calendarPicker.dayTextColor = Color.RED
+...
+binding.calendarPicker.initCalendar() // REFRESHES CALENDAR AFTER CHANGING ATTRIBUTES
+```
+
+You can use `calendar.addEvents(vararg events: Calendar)` if you need to mark import dates or show an event on specific dates (thanks @Xpjay 👍).
+
+```Kotlin
+binding.calendarPicker.addEvents(
+  Pair("event  1", Calendar.getInstance()),
+  Pair("event  2", Calendar.Builder().setDate(2021, 8, 12).build()),
+  Pair("event  3", Calendar.Builder().setDate(2020, 8, 11).build()),
+  Pair("event  4", Calendar.Builder().setDate(2021, 2, 1).build()),
+  Pair("event  5", Calendar.Builder().setDate(2021, 11, 8).build()),
+)
+```
 
 The [sample](https://github.com/JoshHalvorson/calendar-date-range-picker/tree/main/sample) directory has some activity code and the xml for creating and using the calendar.
 
@@ -84,6 +104,7 @@ Most of the attributes for the calendar are for changing the colors, almost ever
     app:yearSelectButtonTextColor="@color/..."
     app:dateRangeTextColor="@color/..."
     app:daysOfWeekTextColor="@color/..."
+    app:eventDotColor="@color/..." 
     app:nextMonthButtonIcon="@drawable/..."
     app:previousMonthButtonIcon="@drawable/..." />
 ```

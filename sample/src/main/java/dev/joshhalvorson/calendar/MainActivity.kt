@@ -1,5 +1,6 @@
 package dev.joshhalvorson.calendar
 
+import android.graphics.Color
 import android.icu.text.DateFormat
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
@@ -16,6 +17,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.calendarPicker.addEvents(
+            Pair("event  1", Calendar.getInstance()),
+            Pair("event  2", Calendar.Builder().setDate(2021, 8, 12).build()),
+            Pair("event  3", Calendar.Builder().setDate(2020, 8, 11).build()),
+            Pair("event  4", Calendar.Builder().setDate(2021, 2, 1).build()),
+            Pair("event  5", Calendar.Builder().setDate(2021, 11, 8).build()),
+        )
+
+        binding.calendarPicker.eventDotColor = Color.CYAN
+        binding.calendarPicker.initCalendar()
 
         binding.getDateRangeButton.setOnClickListener {
             val selectedDates = binding.calendarPicker.getSelectedDates()
