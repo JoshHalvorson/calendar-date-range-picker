@@ -66,7 +66,7 @@ binding.calendarPicker.dayTextColor = Color.RED
 binding.calendarPicker.initCalendar() // REFRESHES CALENDAR AFTER CHANGING ATTRIBUTES
 ```
 
-You can use `calendar.addEvents(vararg events: Calendar)` if you need to mark import dates or show an event on specific dates (thanks @Xpjay 👍).
+You can use `calendar.addEvents(vararg events: Calendar)` if you need to mark important dates or show an event on specific dates (thanks @Xpjay 👍).
 
 ```Kotlin
 binding.calendarPicker.addEvents(
