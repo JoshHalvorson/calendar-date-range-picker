@@ -11,10 +11,8 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.widget.*
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.forEach
 import dev.joshhalvorson.calendar_date_range_picker.R
 import java.text.SimpleDateFormat
@@ -28,9 +26,11 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         const val TAG = "CalendarPicker"
     }
 
+    private val sdf = SimpleDateFormat("M/dd/yyyy", Locale.US)
+
     private var textViews = mutableListOf<TextView>()
-    private var firstSelectedDate = mutableMapOf<String, Int>()
-    private var secondSelectedDate = mutableMapOf<String, Int>()
+    private var firstSelectedDate = mutableMapOf<String?, Int?>()
+    private var secondSelectedDate = mutableMapOf<String?, Int?>()
     private var selectedDateRange = Pair(0L, 0L)
     private var currentMonth = Calendar.getInstance().get(2)
     private var currentYear = Year.now().value
@@ -90,9 +90,8 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                 ""
             )
         )
-        // TODO(look at removing !!)
-        if (validated.first!!) {
-            selectedDateRange = validated.second!!
+        if (validated.first) {
+            selectedDateRange = validated.second
             return selectedDateRange
 
         }
@@ -148,7 +147,6 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
         val startDay = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
         val daysInMonth = CalendarUtils.Constants.daysInMonth[currentMonth].second
-        val sdf = SimpleDateFormat("M/dd/yyyy", Locale.US)
 
         textViews.clear()
         for (i in startDay until daysInMonth + startDay) {
@@ -166,18 +164,20 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                         setFirstSelectedDate(this)
                         secondSelectedDate = mutableMapOf()
                     } else if (firstSelectedDate["year"] != null) {
-                        secondSelectedDate["year"] = selectedYear
-                        secondSelectedDate["month"] = currentMonth
-                        secondSelectedDate["day"] = text.toString().toInt()
-                        val firstDate = sdf.parse(
-                            "${firstSelectedDate["month"]!!.plus(1)}/${firstSelectedDate["day"]}/${firstSelectedDate["year"]}"
-                        )
-                        val secondDate = sdf.parse(
-                            "${secondSelectedDate["month"]!!.plus(1)}/${secondSelectedDate["day"]}/${secondSelectedDate["year"]}"
-                        )
-                        if (secondDate!!.before(firstDate)) {
-                            setFirstSelectedDate(this)
-                            secondSelectedDate = mutableMapOf()
+                        setSecondSelectedDate(this)
+
+                        val firstDate = getFirstSelectedDate()
+                        val secondDate = getSecondSelectedDate()
+
+                        firstDate?.let {
+                            secondDate?.let {
+                                if (firstDate == secondDate) {
+                                    clearSecondSelectedDate()
+                                } else if (secondDate.before(firstDate)) {
+                                    setFirstSelectedDate(this)
+                                    secondSelectedDate = mutableMapOf()
+                                }
+                            }
                         }
                     } else {
                         setFirstSelectedDate(this)
@@ -385,6 +385,40 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         firstSelectedDate["day"] = tv.text.toString().toInt()
     }
 
+    private fun clearFirstSelectedDate() {
+        firstSelectedDate["year"] = null
+        firstSelectedDate["month"] = null
+        firstSelectedDate["day"] = null
+    }
+
+    private fun getFirstSelectedDate(): Date? {
+        return try {
+            sdf.parse("${firstSelectedDate["month"]?.plus(1)}/${firstSelectedDate["day"]}/${firstSelectedDate["year"]}")
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun setSecondSelectedDate(tv: TextView) {
+        secondSelectedDate["year"] = selectedYear
+        secondSelectedDate["month"] = currentMonth
+        secondSelectedDate["day"] = tv.text.toString().toInt()
+    }
+
+    private fun getSecondSelectedDate(): Date? {
+        return try {
+            sdf.parse("${secondSelectedDate["month"]?.plus(1)}/${secondSelectedDate["day"]}/${secondSelectedDate["year"]}")
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun clearSecondSelectedDate() {
+        secondSelectedDate["year"] = null
+        secondSelectedDate["month"] = null
+        secondSelectedDate["day"] = null
+    }
+
     private fun drawSelectedDates() {
         Log.i(TAG, "first $firstSelectedDate")
         Log.i(TAG, "second $secondSelectedDate")
@@ -526,13 +560,8 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         }
 
         if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
-            val sdf = SimpleDateFormat("M/dd/yyyy", Locale.US)
-            val firstDate = sdf.parse(
-                "${firstSelectedDate["month"]!!.plus(1)}/${firstSelectedDate["day"]}/${firstSelectedDate["year"]}"
-            )
-            val secondDate = sdf.parse(
-                "${secondSelectedDate["month"]!!.plus(1)}/${secondSelectedDate["day"]}/${secondSelectedDate["year"]}"
-            )
+            val firstDate = getFirstSelectedDate()
+            val secondDate = getSecondSelectedDate()
             for (i in 1 until 43) {
                 val resID = resources.getIdentifier("d${i}", "id", context.packageName)
                 val tv = findViewById<TextView>(resID)
@@ -574,7 +603,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
         }
 
-       tv?.apply {
+        tv?.apply {
             background = layers
             highlightedDatesTextColor?.let {
                 setTextColor(it)
