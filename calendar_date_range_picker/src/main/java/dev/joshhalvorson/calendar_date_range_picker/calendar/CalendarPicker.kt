@@ -643,7 +643,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         for (i in 1 until 43) {
             val id: Int = resources.getIdentifier("d$i", "id", context.packageName)
             findViewById<TextView>(id).apply {
-                text = "10"
+                text = context.getString(R.string.empty_date_text)
                 visibility = View.INVISIBLE
                 tag = null
                 background = null
