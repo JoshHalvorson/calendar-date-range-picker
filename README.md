@@ -25,7 +25,7 @@ Then add the dependency to your app build.gradle
 
 ```Gradle
 dependencies {
-  implementation 'com.github.JoshHalvorson:calendar-date-range-picker:0.1.0'
+  implementation 'com.github.JoshHalvorson:calendar-date-range-picker:0.1.1'
 }
 ```
 
