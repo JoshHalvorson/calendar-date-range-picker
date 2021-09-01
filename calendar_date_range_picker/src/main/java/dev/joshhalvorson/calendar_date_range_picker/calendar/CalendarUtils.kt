@@ -1,7 +1,5 @@
 package dev.joshhalvorson.calendar_date_range_picker.calendar
 
-import java.time.Year
-
 /** Utility class */
 internal object CalendarUtils {
     private const val JANUARY = "January"
@@ -23,7 +21,10 @@ internal object CalendarUtils {
      * @return an index representing the day of the week where 1 is monday, 2 tuesday, etc.
      */
     internal fun getDayOfWeekOfDate(year: Int, month: Int, date: Int): Int {
-        return (getYearCode(year) + getMonthCode(month) + getCenturyCode(year) + date - (if (isLeapYear(year, month)) 1 else 0)) % 7
+        return (getYearCode(year) + getMonthCode(month) + getCenturyCode(year) + date - (if (isLeapYear(
+                year
+            )
+        ) 1 else 0)) % 7
     }
 
     private fun getYearCode(year: Int): Int {
@@ -56,22 +57,6 @@ internal object CalendarUtils {
         }
     }
 
-    internal fun isLeapYear(year: Int, month: Int): Boolean {
-        val leapMonth = when (month) {
-            0 -> true
-            1 -> true
-            else -> false
-        }
-
-        if (!leapMonth) return false
-
-        val leapYear = ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0)
-
-        if (!leapYear) return false
-
-        return true
-    }
-
     internal fun isLeapYear(year: Int): Boolean {
         return when {
             year % 4 != 0 -> {
@@ -87,6 +72,25 @@ internal object CalendarUtils {
                 true
             }
         }
+    }
+
+    internal fun getDaysInMonth(month: Int, year: Int): Int? {
+        val daysInMonth = mapOf(
+            0 to 31,
+            1 to if (isLeapYear(year)) 29 else 28,
+            2 to 31,
+            3 to 30,
+            4 to 31,
+            5 to 30,
+            6 to 31,
+            7 to 31,
+            8 to 30,
+            9 to 31,
+            10 to 30,
+            11 to 31
+        )
+
+        return daysInMonth[month]
     }
 
     object Constants {
@@ -118,36 +122,6 @@ internal object CalendarUtils {
             9 to OCTOBER,
             10 to NOVEMBER,
             11 to DECEMBER,
-        )
-
-        val daysInMonth = arrayOf(
-            "Jan" to 31,
-            "Feb" to if (isLeapYear(Year.now().value, 1)) 29 else 28,
-            "Mar" to 31,
-            "Apr" to 30,
-            "May" to 31,
-            "Jun" to 30,
-            "Jul" to 31,
-            "Aug" to 31,
-            "Sep" to 30,
-            "Oct" to 31,
-            "Nov" to 30,
-            "Dec" to 31
-        )
-
-        val daysInIntMonth = arrayOf(
-            0 to 31,
-            1 to if (isLeapYear(Year.now().value, 1)) 29 else 28,
-            2 to 31,
-            3 to 30,
-            4 to 31,
-            5 to 30,
-            6 to 31,
-            7 to 31,
-            8 to 30,
-            9 to 31,
-            10 to 30,
-            11 to 31
         )
     }
 }

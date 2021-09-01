@@ -234,34 +234,36 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         setDateRangeText()
 
         val startDay = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
-        val daysInMonth = CalendarUtils.Constants.daysInMonth[currentMonth].second
+        val daysInMonth = CalendarUtils.getDaysInMonth(currentMonth, selectedYear)
 
-        textViews.clear()
-        for (i in startDay until daysInMonth + startDay) {
-            val tv = createTextView(i, startDay)
-            textViews.add(tv)
-        }
-
-        tvsWithEvent.clear()
-        textViews.forEach { tv ->
-            calendarEvents.forEach {
-                checkIfDateHasEvent(tv, it)
+        daysInMonth?.let {
+            textViews.clear()
+            for (i in startDay until daysInMonth + startDay) {
+                val tv = createTextView(i, startDay)
+                textViews.add(tv)
             }
-        }
 
-        prevMonthButton.setOnClickListener {
-            goToPreviousMonth()
-        }
+            tvsWithEvent.clear()
+            textViews.forEach { tv ->
+                calendarEvents.forEach {
+                    checkIfDateHasEvent(tv, it)
+                }
+            }
 
-        nextMonthButton.setOnClickListener {
-            goToNextMonth()
-        }
+            prevMonthButton.setOnClickListener {
+                goToPreviousMonth()
+            }
 
-        yearButton.setOnClickListener {
-            switchCalendarViews()
-        }
+            nextMonthButton.setOnClickListener {
+                goToNextMonth()
+            }
 
-        drawSelectedDates()
+            yearButton.setOnClickListener {
+                switchCalendarViews()
+            }
+
+            drawSelectedDates()
+        }
     }
 
     private fun checkIfDateHasEvent(

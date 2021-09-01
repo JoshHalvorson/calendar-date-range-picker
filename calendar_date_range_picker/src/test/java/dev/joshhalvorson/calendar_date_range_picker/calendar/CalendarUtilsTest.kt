@@ -47,26 +47,23 @@ internal class CalendarUtilsTest {
     }
 
     @Test
-    fun getDayOfWeekOfDateShouldSuccessButIsFailing() {
-        val year = 2021
-        val august = 7 // 0-based index
+    fun getDaysInMonthShouldSuccess() {
+        val yearOne = 2021
+        val yearTwo = 2020
+        val february = 1 // 0-based index
+        val september = 8 // 0-based index
 
-        // this test if failing because CalendarUtils.isLeapYear(year, month) is buggy
-        // see comments in test: isLeapYearShouldSuccessButIsFailing
+        // yyyy-mm: 2021-02 has 28 days
+        assertThat(CalendarUtils.getDaysInMonth(february, yearOne)).isEqualTo(28)
 
-        // yyyy-mm-dd: 2020-02-31 is friday
-        assertThat(CalendarUtils.getDayOfWeekOfDate(year, august, 31)).isEqualTo(fridayCode)
-    }
+        // yyyy-mm: 2020-02 has 29 days
+        assertThat(CalendarUtils.getDaysInMonth(february, yearTwo)).isEqualTo(29)
 
-    @Test
-    fun isLeapYearShouldSuccessButIsFailing() {
-        // this test was added as a proof that CalendarUtils.isLeapYear(year, month) is buggy
-        // as an alternative I added CalendarUtils.isLeapYear(year).
-        // If PR is OK we will migrate the code to use the new isLeapYear and remove this test.
-        val leapYear = 2020
-        val month = 2
+        // yyyy-mm: 2021-09 has 30 days
+        assertThat(CalendarUtils.getDaysInMonth(september, yearOne)).isEqualTo(30)
 
-        assertThat(CalendarUtils.isLeapYear(leapYear, month)).isTrue()
+        // yyyy-mm: 2020-09 has 30 days
+        assertThat(CalendarUtils.getDaysInMonth(september, yearTwo)).isEqualTo(30)
     }
 
     @Test
