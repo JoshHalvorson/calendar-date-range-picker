@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/eventDot"
+        android:bottom="25dp"
+        android:end="5dp"
+        android:start="5dp">
+        <shape
+            android:innerRadius="0dp"
+            android:shape="ring"
+            android:thicknessRatio="16"
+            android:useLevel="false">
+            <solid android:color="@color/blue_one" />
+            <stroke
+                android:width="1.5dp"
+                android:color="@color/blue_one" />
+        </shape>
+    </item>
+</layer-list>
+

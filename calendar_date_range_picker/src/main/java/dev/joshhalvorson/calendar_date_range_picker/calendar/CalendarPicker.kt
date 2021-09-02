@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat
@@ -64,15 +65,17 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     var eventDotColorWhenSelected: Int? = null
     var previousMonthButtonIcon: Drawable? = null
     var nextMonthButtonIcon: Drawable? = null
+    var eventDotGravity: Int? = null
 
+    private val tvsWithEvent = mutableListOf<String>()
     val calendarEvents = mutableListOf<Pair<String, Calendar>>()
-    val tvsWithEvent = mutableListOf<String>()
 
     init {
         inflate(context, R.layout.calendar, this)
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.CalendarPicker)
         getColorAttributes(attributes)
         getDrawableAttributes(attributes)
+        getIntegerAttributes(attributes)
         attributes.recycle()
 
         setColors()
@@ -185,6 +188,12 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             ?: ResourcesCompat.getDrawable(resources, R.drawable.ic_chevron_right, null)
     }
 
+    private fun getIntegerAttributes(attributes: TypedArray) {
+        eventDotGravity =
+            attributes.getInteger(R.styleable.CalendarPicker_eventDotGravity, Gravity.END)
+    }
+
+
     private fun setDrawables() {
         previousMonthButtonIcon?.let {
             prevMonthButton.setImageDrawable(it)
@@ -285,10 +294,45 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun setEventDot(tv: TextView) {
-        val layers = ContextCompat.getDrawable(
-            context,
-            R.drawable.event_background
-        ) as LayerDrawable?
+        val layers = eventDotGravity?.let {
+            when (it) {
+                Gravity.START -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_start
+                    ) as LayerDrawable?
+                }
+
+                Gravity.END -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_end
+                    ) as LayerDrawable?
+                }
+
+                Gravity.TOP -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_top
+                    ) as LayerDrawable?
+                }
+
+                Gravity.BOTTOM -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_bottom
+                    ) as LayerDrawable?
+                }
+
+                else -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_end
+                    ) as LayerDrawable?
+                }
+            }
+        }
+
 
         layers?.let {
             eventDotColor?.let { color ->
@@ -471,10 +515,43 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                 }
 
                 val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.circle_event
-                    ) as LayerDrawable?
+                    eventDotGravity?.let {
+                        when (it) {
+                            Gravity.START -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_start
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.END -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.TOP -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_top
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.BOTTOM -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_bottom
+                                ) as LayerDrawable?
+                            }
+                            else -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+                        }
+                    }
                 } else {
                     ContextCompat.getDrawable(
                         context,
@@ -501,10 +578,43 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
                 if (secondSelectedDate["year"] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                        ContextCompat.getDrawable(
-                            context,
-                            R.drawable.circle_right_event
-                        ) as LayerDrawable?
+                        eventDotGravity?.let {
+                            when (it) {
+                                Gravity.START -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_start
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.END -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_end
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.TOP -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_top
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.BOTTOM -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_bottom
+                                    ) as LayerDrawable?
+                                }
+                                else -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_end
+                                    ) as LayerDrawable?
+                                }
+                            }
+                        }
                     } else {
                         ContextCompat.getDrawable(
                             context,
@@ -545,10 +655,43 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                 }
 
                 val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.circle_event
-                    ) as LayerDrawable?
+                    eventDotGravity?.let {
+                        when (it) {
+                            Gravity.START -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_start
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.END -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.TOP -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_top
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.BOTTOM -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_bottom
+                                ) as LayerDrawable?
+                            }
+                            else -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+                        }
+                    }
                 } else {
                     ContextCompat.getDrawable(
                         context,
@@ -576,17 +719,49 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
                 if (firstSelectedDate["year"] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                        ContextCompat.getDrawable(
-                            context,
-                            R.drawable.circle_left_event
-                        ) as LayerDrawable?
+                        eventDotGravity?.let {
+                            when (it) {
+                                Gravity.START -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_start
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.END -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_end
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.TOP -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_top
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.BOTTOM -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_bottom
+                                    ) as LayerDrawable?
+                                }
+                                else -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_end
+                                    ) as LayerDrawable?
+                                }
+                            }
+                        }
                     } else {
                         ContextCompat.getDrawable(
                             context,
                             R.drawable.circle_left
                         ) as LayerDrawable?
                     }
-
 
                     layers?.let {
                         highlightedDatesBackgroundColor?.let { color ->
@@ -639,7 +814,43 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         val resID = resources.getIdentifier("d${i}", "id", context.packageName)
         val tv = findViewById<TextView>(resID)
         val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-            ContextCompat.getDrawable(context, R.drawable.selected_date_background_event) as LayerDrawable?
+            eventDotGravity?.let {
+                when (it) {
+                    Gravity.START -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_start
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.END -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_end
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.TOP -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_top
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.BOTTOM -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_bottom
+                        ) as LayerDrawable?
+                    }
+                    else -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_end
+                        ) as LayerDrawable?
+                    }
+                }
+            }
         } else {
             ContextCompat.getDrawable(context, R.drawable.selected_date_background) as LayerDrawable?
         }

@@ -20,7 +20,14 @@
         <attr name="dateRangeTextColor" format="color" />
         <attr name="daysOfWeekTextColor" format="color" />
 
-        <attr name="nextMonthButtonIcon" format="reference"/>
-        <attr name="previousMonthButtonIcon" format="reference"/>
+        <attr name="nextMonthButtonIcon" format="reference" />
+        <attr name="previousMonthButtonIcon" format="reference" />
+
+        <attr name="eventDotGravity">
+            <flag name="bottom" value="80" />
+            <flag name="end" value="8388613" />
+            <flag name="start" value="8388611" />
+            <flag name="top" value="48" />
+        </attr>
     </declare-styleable>
 </resources>
