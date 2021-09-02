@@ -24,16 +24,21 @@ import java.util.*
 
 class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
     companion object {
-        const val TAG = "CalendarPicker"
+        private const val TAG = "CalendarPicker"
+        /** String for parsing dates. */
+        private const val DATE_FORMAT = "M/dd/yyyy"
+        private const val YEAR_KEY = "year"
+        private const val MONTH_KEY = "month"
+        private const val DAY_KEY = "day"
     }
 
-    private val sdf = SimpleDateFormat("M/dd/yyyy", Locale.US)
+    private val sdf = SimpleDateFormat(DATE_FORMAT, Locale.US)
 
-    private var textViews = mutableListOf<TextView>()
+    private var daysTextViews = mutableListOf<TextView>()
     private var firstSelectedDate = mutableMapOf<String?, Int?>()
     private var secondSelectedDate = mutableMapOf<String?, Int?>()
     private var selectedDateRange = Pair(0L, 0L)
-    private var currentMonth = Calendar.getInstance().get(2)
+    private var currentMonth = Calendar.getInstance().get(Calendar.MONTH)
     private var currentYear = Year.now().value
     private var selectedYear = currentYear
 
@@ -242,20 +247,20 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             "${CalendarUtils.Constants.INT_MONTHS_TO_STRING_MONTHS[currentMonth]} $selectedYear"
         setDateRangeText()
 
-        val startDay = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
+        val dayOfWeek = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
         val daysInMonth = CalendarUtils.getDaysInMonth(currentMonth, selectedYear)
 
         daysInMonth?.let {
-            textViews.clear()
-            for (i in startDay until daysInMonth + startDay) {
-                val tv = createTextView(i, startDay)
-                textViews.add(tv)
+            daysTextViews.clear()
+            for (dayIndex in dayOfWeek until daysInMonth + dayOfWeek) {
+                val tv = createDayTextView(dayIndex, dayOfWeek)
+                daysTextViews.add(tv)
             }
 
             tvsWithEvent.clear()
-            textViews.forEach { tv ->
-                calendarEvents.forEach {
-                    checkIfDateHasEvent(tv, it)
+            daysTextViews.forEach { dayTextView ->
+                calendarEvents.forEach { eventPair ->
+                    checkIfDateHasEvent(dayTextView, eventPair)
                 }
             }
 
@@ -276,18 +281,18 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun checkIfDateHasEvent(
-        tv: TextView,
-        it: Pair<String, Calendar>
+            dayTextView: TextView,
+            eventPair: Pair<String, Calendar>
     ) {
         val calendarDate =
-            sdf.parse("${currentMonth.plus(1)}/${tv.text.toString().toInt()}/${selectedYear}")
+            sdf.parse("${currentMonth.plus(1)}/${dayTextView.text.toString().toInt()}/${selectedYear}")
         val eventDate =
-            sdf.parse("${it.second.timeInMillis.toLocalDateTime()?.month?.value.toString()}/${it.second.timeInMillis.toLocalDateTime()?.dayOfMonth.toString()}/${it.second.timeInMillis.toLocalDateTime()?.year.toString()}")
+            sdf.parse("${eventPair.second.timeInMillis.toLocalDateTime()?.month?.value.toString()}/${eventPair.second.timeInMillis.toLocalDateTime()?.dayOfMonth.toString()}/${eventPair.second.timeInMillis.toLocalDateTime()?.year.toString()}")
 
         calendarDate?.let {
             eventDate?.let {
                 if (calendarDate == eventDate) {
-                    setEventDot(tv)
+                    setEventDot(dayTextView)
                 }
             }
         }
@@ -344,21 +349,21 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         tvsWithEvent.add(tv.text.toString())
     }
 
-    private fun createTextView(i: Int, startDay: Int): TextView {
-        val day = i + 1
+    private fun createDayTextView(dayIndex: Int, dayOfWeek: Int): TextView {
+        val day = dayIndex + 1
         val id: Int = resources.getIdentifier("d$day", "id", context.packageName)
         val tv = findViewById<TextView>(id).apply {
-            text = (day - startDay).toString()
-            tag = (day - startDay).toString()
+            text = (day - dayOfWeek).toString()
+            tag = (day - dayOfWeek).toString()
             dayTextColor?.let {
                 setTextColor(it)
             }
             visibility = VISIBLE
             setOnClickListener {
-                if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
+                if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
                     setFirstSelectedDate(this)
                     secondSelectedDate = mutableMapOf()
-                } else if (firstSelectedDate["year"] != null) {
+                } else if (firstSelectedDate[YEAR_KEY] != null) {
                     setSecondSelectedDate(this)
 
                     val firstDate = getFirstSelectedDate()
@@ -386,40 +391,40 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun setDateRangeText() {
-        if (firstSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null) {
             val month = "${
-                if (firstSelectedDate["month"]!!.plus(1) < 10) "0${
-                    firstSelectedDate["month"]!!.plus(
+                if (firstSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    firstSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else firstSelectedDate["month"]!!.plus(1)
+                }" else firstSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val day =
-                "${if (firstSelectedDate["day"]!! < 10) "0${firstSelectedDate["day"]}" else firstSelectedDate["day"]}"
-            val year = "${firstSelectedDate["year"]}"
+                "${if (firstSelectedDate[DAY_KEY]!! < 10) "0${firstSelectedDate[DAY_KEY]}" else firstSelectedDate[DAY_KEY]}"
+            val year = "${firstSelectedDate[YEAR_KEY]}"
             dateRangeText.text = "$month/$day/$year - mm/dd/yy"
         }
-        if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
             val firstMonth = "${
-                if (firstSelectedDate["month"]!!.plus(1) < 10) "0${
-                    firstSelectedDate["month"]!!.plus(
+                if (firstSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    firstSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else firstSelectedDate["month"]!!.plus(1)
+                }" else firstSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val firstDay =
-                "${if (firstSelectedDate["day"]!! < 10) "0${firstSelectedDate["day"]}" else firstSelectedDate["day"]}"
-            val firstYear = "${firstSelectedDate["year"]}"
+                "${if (firstSelectedDate[DAY_KEY]!! < 10) "0${firstSelectedDate[DAY_KEY]}" else firstSelectedDate[DAY_KEY]}"
+            val firstYear = "${firstSelectedDate[YEAR_KEY]}"
             val secondMonth = "${
-                if (secondSelectedDate["month"]!!.plus(1) < 10) "0${
-                    secondSelectedDate["month"]!!.plus(
+                if (secondSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    secondSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else secondSelectedDate["month"]!!.plus(1)
+                }" else secondSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val secondDay =
-                "${if (secondSelectedDate["day"]!! < 10) "0${secondSelectedDate["day"]}" else secondSelectedDate["day"]}"
-            val secondYear = "${secondSelectedDate["year"]}"
+                "${if (secondSelectedDate[DAY_KEY]!! < 10) "0${secondSelectedDate[DAY_KEY]}" else secondSelectedDate[DAY_KEY]}"
+            val secondYear = "${secondSelectedDate[YEAR_KEY]}"
             dateRangeText.text =
                 "$firstMonth/$firstDay/$firstYear - $secondMonth/$secondDay/$secondYear"
         }
@@ -464,52 +469,52 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun setFirstSelectedDate(tv: TextView) {
-        firstSelectedDate["year"] = selectedYear
-        firstSelectedDate["month"] = currentMonth
-        firstSelectedDate["day"] = tv.text.toString().toInt()
+        firstSelectedDate[YEAR_KEY] = selectedYear
+        firstSelectedDate[MONTH_KEY] = currentMonth
+        firstSelectedDate[DAY_KEY] = tv.text.toString().toInt()
     }
 
     private fun clearFirstSelectedDate() {
-        firstSelectedDate["year"] = null
-        firstSelectedDate["month"] = null
-        firstSelectedDate["day"] = null
+        firstSelectedDate[YEAR_KEY] = null
+        firstSelectedDate[MONTH_KEY] = null
+        firstSelectedDate[DAY_KEY] = null
     }
 
     private fun getFirstSelectedDate(): Date? {
         return try {
-            sdf.parse("${firstSelectedDate["month"]?.plus(1)}/${firstSelectedDate["day"]}/${firstSelectedDate["year"]}")
+            sdf.parse("${firstSelectedDate[MONTH_KEY]?.plus(1)}/${firstSelectedDate[DAY_KEY]}/${firstSelectedDate[YEAR_KEY]}")
         } catch (e: Exception) {
             null
         }
     }
 
     private fun setSecondSelectedDate(tv: TextView) {
-        secondSelectedDate["year"] = selectedYear
-        secondSelectedDate["month"] = currentMonth
-        secondSelectedDate["day"] = tv.text.toString().toInt()
+        secondSelectedDate[YEAR_KEY] = selectedYear
+        secondSelectedDate[MONTH_KEY] = currentMonth
+        secondSelectedDate[DAY_KEY] = tv.text.toString().toInt()
     }
 
     private fun getSecondSelectedDate(): Date? {
         return try {
-            sdf.parse("${secondSelectedDate["month"]?.plus(1)}/${secondSelectedDate["day"]}/${secondSelectedDate["year"]}")
+            sdf.parse("${secondSelectedDate[MONTH_KEY]?.plus(1)}/${secondSelectedDate[DAY_KEY]}/${secondSelectedDate[YEAR_KEY]}")
         } catch (e: Exception) {
             null
         }
     }
 
     private fun clearSecondSelectedDate() {
-        secondSelectedDate["year"] = null
-        secondSelectedDate["month"] = null
-        secondSelectedDate["day"] = null
+        secondSelectedDate[YEAR_KEY] = null
+        secondSelectedDate[MONTH_KEY] = null
+        secondSelectedDate[DAY_KEY] = null
     }
 
     private fun drawSelectedDates() {
         Log.i(TAG, "first $firstSelectedDate")
         Log.i(TAG, "second $secondSelectedDate")
-        if (firstSelectedDate["year"] != null) {
-            if (selectedYear == firstSelectedDate["year"] && currentMonth == firstSelectedDate["month"]) {
+        if (firstSelectedDate[YEAR_KEY] != null) {
+            if (selectedYear == firstSelectedDate[YEAR_KEY] && currentMonth == firstSelectedDate[MONTH_KEY]) {
                 val tv: TextView =
-                    daysLinearLayout.findViewWithTag(firstSelectedDate["day"].toString())
+                    daysLinearLayout.findViewWithTag(firstSelectedDate[DAY_KEY].toString())
                 firstSelectedDateTextColor?.let {
                     tv.setTextColor(it)
                 }
@@ -576,7 +581,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
 
                 tv.background = layers
 
-                if (secondSelectedDate["year"] != null) {
+                if (secondSelectedDate[YEAR_KEY] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
                         eventDotGravity?.let {
                             when (it) {
@@ -646,10 +651,10 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
         }
 
-        if (secondSelectedDate["year"] != null) {
-            if (selectedYear == secondSelectedDate["year"] && currentMonth == secondSelectedDate["month"]) {
+        if (secondSelectedDate[YEAR_KEY] != null) {
+            if (selectedYear == secondSelectedDate[YEAR_KEY] && currentMonth == secondSelectedDate[MONTH_KEY]) {
                 val tv: TextView =
-                    daysLinearLayout.findViewWithTag(secondSelectedDate["day"].toString())
+                    daysLinearLayout.findViewWithTag(secondSelectedDate[DAY_KEY].toString())
                 secondSelectedDateTextColor?.let {
                     tv.setTextColor(it)
                 }
@@ -717,7 +722,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                 tv.background = layers
 
 
-                if (firstSelectedDate["year"] != null) {
+                if (firstSelectedDate[YEAR_KEY] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
                         eventDotGravity?.let {
                             when (it) {
@@ -786,7 +791,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
         }
 
-        if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
             val firstDate = getFirstSelectedDate()
             val secondDate = getSecondSelectedDate()
             for (i in 1 until 43) {
