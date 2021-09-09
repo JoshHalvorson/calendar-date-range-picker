@@ -16,17 +16,21 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.calendarPicker.addEvents(
+        val eventsList = listOf(
             Pair("event  1", Calendar.getInstance()),
             Pair("event  2", Calendar.Builder().setDate(2021, 8, 12).build()),
             Pair("event  3", Calendar.Builder().setDate(2020, 8, 11).build()),
             Pair("event  4", Calendar.Builder().setDate(2021, 2, 1).build()),
             Pair("event  5", Calendar.Builder().setDate(2021, 11, 8).build()),
         )
+        binding.calendarPicker.addEvents(eventsList)
 
         binding.calendarPicker.eventDotColor = Color.CYAN
         binding.calendarPicker.eventDotColorWhenSelected = Color.RED
         binding.calendarPicker.eventDotColorWhenHighlighted = Color.GREEN
+        binding.calendarPicker.setFirstSelectedDate(year = 2021, month = 8, day = 9)
+        binding.calendarPicker.setSecondSelectedDate(year = 2021, month = 8, day = 19)
+        
         binding.calendarPicker.initCalendar()
 
         binding.getDateRangeButton.setOnClickListener {
