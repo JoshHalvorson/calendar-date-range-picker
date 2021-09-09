@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardView3"
+        android:id="@+id/calendarCardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -45,7 +45,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="mm/dd/yyyy - mm/dd/yyyy"
+                android:hint="mm/dd/yyyy - mm/dd/yyyy"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toTopOf="@+id/divider"
                 app:layout_constraintStart_toStartOf="parent"
@@ -148,21 +148,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="30dp"
-                    android:orientation="horizontal"></LinearLayout>
+                    android:orientation="horizontal"/>
 
                 <LinearLayout
                     android:id="@+id/yearRow2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="30dp"
-                    android:orientation="horizontal"></LinearLayout>
+                    android:orientation="horizontal"/>
 
                 <LinearLayout
                     android:id="@+id/yearRow3"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="30dp"
-                    android:orientation="horizontal"></LinearLayout>
+                    android:orientation="horizontal"/>
 
                 <LinearLayout
                     android:id="@+id/yearRow4"
@@ -170,13 +170,13 @@
                     android:layout_height="match_parent"
                     android:layout_marginTop="30dp"
                     android:layout_marginBottom="30dp"
-                    android:orientation="horizontal"></LinearLayout>
+                    android:orientation="horizontal"/>
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/daysOfWeekLinearLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -185,7 +185,7 @@
                 tools:visibility="gone">
 
                 <TextView
-                    android:id="@+id/textView89"
+                    android:id="@+id/dayOfWeekTextView1"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -195,7 +195,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView90"
+                    android:id="@+id/dayOfWeekTextView2"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -205,7 +205,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView91"
+                    android:id="@+id/dayOfWeekTextView3"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -215,7 +215,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView92"
+                    android:id="@+id/dayOfWeekTextView4"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -225,7 +225,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView93"
+                    android:id="@+id/dayOfWeekTextView5"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -235,7 +235,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView94"
+                    android:id="@+id/dayOfWeekTextView6"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -245,7 +245,7 @@
                     android:textColor="@color/grey_two" />
 
                 <TextView
-                    android:id="@+id/textView95"
+                    android:id="@+id/dayOfWeekTextView7"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -477,7 +477,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="horizontal">
 
@@ -582,7 +582,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="horizontal">
 
@@ -687,7 +687,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <TextView
@@ -791,7 +791,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="horizontal">
 

@@ -9,12 +9,14 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.forEach
 import dev.joshhalvorson.calendar_date_range_picker.R
+import dev.joshhalvorson.calendar_date_range_picker.calendar.model.CalendarEvent
 import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -23,16 +25,21 @@ import java.util.*
 
 class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
     companion object {
-        const val TAG = "CalendarPicker"
+        private const val TAG = "CalendarPicker"
+        /** String for parsing dates. */
+        private const val DATE_FORMAT = "M/dd/yyyy"
+        private const val YEAR_KEY = "year"
+        private const val MONTH_KEY = "month"
+        private const val DAY_KEY = "day"
     }
 
-    private val sdf = SimpleDateFormat("M/dd/yyyy", Locale.US)
+    private val sdf = SimpleDateFormat(DATE_FORMAT, Locale.US)
 
-    private var textViews = mutableListOf<TextView>()
+    private var daysTextViews = mutableListOf<TextView>()
     private var firstSelectedDate = mutableMapOf<String?, Int?>()
     private var secondSelectedDate = mutableMapOf<String?, Int?>()
     private var selectedDateRange = Pair(0L, 0L)
-    private var currentMonth = Calendar.getInstance().get(2)
+    private var currentMonth = Calendar.getInstance().get(Calendar.MONTH)
     private var currentYear = Year.now().value
     private var selectedYear = currentYear
 
@@ -60,17 +67,21 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     var dateRangeTextColor: Int? = null
     var daysOfWeekTextColor: Int? = null
     var eventDotColor: Int? = null
+    var eventDotColorWhenHighlighted: Int? = null
+    var eventDotColorWhenSelected: Int? = null
     var previousMonthButtonIcon: Drawable? = null
     var nextMonthButtonIcon: Drawable? = null
+    var eventDotGravity: Int? = null
 
-    val calendarEvents = mutableListOf<Pair<String, Calendar>>()
-    val tvsWithEvent = mutableListOf<String>()
+    private val tvsWithEvent = mutableListOf<String>()
+    val calendarEvents = mutableListOf<CalendarEvent>()
 
     init {
         inflate(context, R.layout.calendar, this)
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.CalendarPicker)
         getColorAttributes(attributes)
         getDrawableAttributes(attributes)
+        getIntegerAttributes(attributes)
         attributes.recycle()
 
         setColors()
@@ -79,6 +90,12 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         initYearsCalendar()
     }
 
+    /**
+     * Gets the current selected dates and returns them.
+     *
+     * @return a nullable Pair<Long, Long> that contains the timeInMillis for the start date
+     * and end date of the selected range
+     */
     fun getSelectedDates(): Pair<Long, Long>? {
         val validated = isValidated(
             dateRangeText.text.split("-")[0].replace(
@@ -99,7 +116,56 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         return null
     }
 
-    fun addEvents(vararg events: Pair<String, Calendar>) {
+    /**
+     * Sets the firstSelectedDate object to a given date, requires initCalendar() to be called
+     * afterwards to see the selected date
+     *
+     * @param year is an int for the selected year
+     * @param month is an int for the selected month (0-11)
+     * @param day is an int for the selected day
+     *
+     */
+    fun setFirstSelectedDate(year: Int, month: Int, day: Int) {
+        firstSelectedDate["year"] = year
+        firstSelectedDate["month"] = month
+        firstSelectedDate["day"] = day
+    }
+
+    /**
+     * Sets the secondSelectedDate object to a given date, requires initCalendar() to be called
+     * afterwards to see the selected date
+     *
+     * @param year is an int for the selected year
+     * @param month is an int for the selected month (0-11)
+     * @param day is an int for the selected day
+     *
+     */
+    fun setSecondSelectedDate(year: Int, month: Int, day: Int) {
+        secondSelectedDate["year"] = year
+        secondSelectedDate["month"] = month
+        secondSelectedDate["day"] = day
+    }
+
+    /**
+     * Adds the event to the calendarEvents object and calls initCalendar() to refresh the calendar
+     * and display the events
+     *
+     * @param events requires a CalendarEvent to display the event dot on the given date, this can
+     * take one or more objects
+     *
+     */
+    fun addEvents(vararg events: CalendarEvent) {
+        calendarEvents.addAll(events)
+        initCalendar()
+    }
+
+    /**
+     * Overloaded method for addEvents(CalendarEvent) that just requires a list of CalendarEvent
+     *
+     * @param events requires a list of CalendarEvent to display the event dot on the given date
+     *
+     */
+    fun addEvents(events: List<CalendarEvent>) {
         calendarEvents.addAll(events)
         initCalendar()
     }
@@ -165,6 +231,14 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             R.styleable.CalendarPicker_eventDotColor,
             ResourcesCompat.getColor(resources, R.color.grey_two, null)
         )
+        eventDotColorWhenHighlighted = attributes.getColor(
+            R.styleable.CalendarPicker_eventDotColorWhenHighlighted,
+            ResourcesCompat.getColor(resources, R.color.grey_two, null)
+        )
+        eventDotColorWhenSelected = attributes.getColor(
+            R.styleable.CalendarPicker_eventDotColorWhenSelected,
+            ResourcesCompat.getColor(resources, R.color.grey_two, null)
+        )
     }
 
     private fun getDrawableAttributes(attributes: TypedArray) {
@@ -174,6 +248,12 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         nextMonthButtonIcon = attributes.getDrawable(R.styleable.CalendarPicker_nextMonthButtonIcon)
             ?: ResourcesCompat.getDrawable(resources, R.drawable.ic_chevron_right, null)
     }
+
+    private fun getIntegerAttributes(attributes: TypedArray) {
+        eventDotGravity =
+            attributes.getInteger(R.styleable.CalendarPicker_eventDotGravity, Gravity.END)
+    }
+
 
     private fun setDrawables() {
         previousMonthButtonIcon?.let {
@@ -223,60 +303,104 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             "${CalendarUtils.Constants.INT_MONTHS_TO_STRING_MONTHS[currentMonth]} $selectedYear"
         setDateRangeText()
 
-        val startDay = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
-        val daysInMonth = CalendarUtils.Constants.daysInMonth[currentMonth].second
+        val dayOfWeek = CalendarUtils.getDayOfWeekOfDate(selectedYear, currentMonth, 1)
+        val daysInMonth = CalendarUtils.getDaysInMonth(currentMonth, selectedYear)
 
-        textViews.clear()
-        for (i in startDay until daysInMonth + startDay) {
-            val tv = createTextView(i, startDay)
-            textViews.add(tv)
-        }
-
-        tvsWithEvent.clear()
-        textViews.forEach { tv ->
-            calendarEvents.forEach {
-                checkIfDateHasEvent(tv, it)
+        daysInMonth?.let {
+            daysTextViews.clear()
+            for (dayIndex in dayOfWeek until daysInMonth + dayOfWeek) {
+                val tv = createDayTextView(dayIndex, dayOfWeek)
+                daysTextViews.add(tv)
             }
-        }
 
-        prevMonthButton.setOnClickListener {
-            goToPreviousMonth()
-        }
+            tvsWithEvent.clear()
+            daysTextViews.forEach { dayTextView ->
+                calendarEvents.forEach { eventPair ->
+                    checkIfDateHasEvent(dayTextView, eventPair)
+                }
+            }
 
-        nextMonthButton.setOnClickListener {
-            goToNextMonth()
-        }
+            prevMonthButton.setOnClickListener {
+                goToPreviousMonth()
+            }
 
-        yearButton.setOnClickListener {
-            switchCalendarViews()
-        }
+            nextMonthButton.setOnClickListener {
+                goToNextMonth()
+            }
 
-        drawSelectedDates()
+            yearButton.setOnClickListener {
+                switchCalendarViews()
+            }
+
+            drawSelectedDates()
+        }
     }
 
     private fun checkIfDateHasEvent(
-        tv: TextView,
-        it: Pair<String, Calendar>
+        dayTextView: TextView,
+        calendarEvent: CalendarEvent
     ) {
-        val calendarDate =
-            sdf.parse("${currentMonth.plus(1)}/${tv.text.toString().toInt()}/${selectedYear}")
-        val eventDate =
-            sdf.parse("${it.second.timeInMillis.toLocalDateTime()?.month?.value.toString()}/${it.second.timeInMillis.toLocalDateTime()?.dayOfMonth.toString()}/${it.second.timeInMillis.toLocalDateTime()?.year.toString()}")
+        val eventDateTime = calendarEvent.date.time.toLocalDateTime()
+        eventDateTime?.let {
+            val calendarDate =
+                sdf.parse(
+                    "${currentMonth.plus(1)}/${
+                        dayTextView.text.toString().toInt()
+                    }/${selectedYear}"
+                )
+            val eventDate =
+                sdf.parse("${eventDateTime.month.value}/${eventDateTime.dayOfMonth}/${eventDateTime.year}")
 
-        calendarDate?.let {
-            eventDate?.let {
-                if (calendarDate == eventDate) {
-                    setEventDot(tv)
+            calendarDate?.let {
+                eventDate?.let {
+                    if (calendarDate == eventDate) {
+                        setEventDot(dayTextView)
+                    }
                 }
             }
         }
     }
 
     private fun setEventDot(tv: TextView) {
-        val layers = ContextCompat.getDrawable(
-            context,
-            R.drawable.event_background
-        ) as LayerDrawable?
+        val layers = eventDotGravity?.let {
+            when (it) {
+                Gravity.START -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_start
+                    ) as LayerDrawable?
+                }
+
+                Gravity.END -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_end
+                    ) as LayerDrawable?
+                }
+
+                Gravity.TOP -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_top
+                    ) as LayerDrawable?
+                }
+
+                Gravity.BOTTOM -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_bottom
+                    ) as LayerDrawable?
+                }
+
+                else -> {
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.event_background_end
+                    ) as LayerDrawable?
+                }
+            }
+        }
+
 
         layers?.let {
             eventDotColor?.let { color ->
@@ -288,22 +412,30 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         tvsWithEvent.add(tv.text.toString())
     }
 
-    private fun createTextView(i: Int, startDay: Int): TextView {
-        val day = i + 1
+    private fun createDayTextView(dayIndex: Int, dayOfWeek: Int): TextView {
+        val day = dayIndex + 1
         val id: Int = resources.getIdentifier("d$day", "id", context.packageName)
         val tv = findViewById<TextView>(id).apply {
-            text = (day - startDay).toString()
-            tag = (day - startDay).toString()
+            text = (day - dayOfWeek).toString()
+            tag = (day - dayOfWeek).toString()
             dayTextColor?.let {
                 setTextColor(it)
             }
             visibility = VISIBLE
             setOnClickListener {
-                if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
-                    setFirstSelectedDate(this)
+                if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
+                    setFirstSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
                     secondSelectedDate = mutableMapOf()
-                } else if (firstSelectedDate["year"] != null) {
-                    setSecondSelectedDate(this)
+                } else if (firstSelectedDate[YEAR_KEY] != null) {
+                    setSecondSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
 
                     val firstDate = getFirstSelectedDate()
                     val secondDate = getSecondSelectedDate()
@@ -313,13 +445,21 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                             if (firstDate == secondDate) {
                                 clearSecondSelectedDate()
                             } else if (secondDate.before(firstDate)) {
-                                setFirstSelectedDate(this)
+                                setFirstSelectedDate(
+                                    year = selectedYear,
+                                    month = currentMonth,
+                                    day = this.text.toString().toInt()
+                                )
                                 secondSelectedDate = mutableMapOf()
                             }
                         }
                     }
                 } else {
-                    setFirstSelectedDate(this)
+                    setFirstSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
                 }
                 resetCalendar()
                 initCalendar()
@@ -330,40 +470,40 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun setDateRangeText() {
-        if (firstSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null) {
             val month = "${
-                if (firstSelectedDate["month"]!!.plus(1) < 10) "0${
-                    firstSelectedDate["month"]!!.plus(
+                if (firstSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    firstSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else firstSelectedDate["month"]!!.plus(1)
+                }" else firstSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val day =
-                "${if (firstSelectedDate["day"]!! < 10) "0${firstSelectedDate["day"]}" else firstSelectedDate["day"]}"
-            val year = "${firstSelectedDate["year"]}"
+                "${if (firstSelectedDate[DAY_KEY]!! < 10) "0${firstSelectedDate[DAY_KEY]}" else firstSelectedDate[DAY_KEY]}"
+            val year = "${firstSelectedDate[YEAR_KEY]}"
             dateRangeText.text = "$month/$day/$year - mm/dd/yy"
         }
-        if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
             val firstMonth = "${
-                if (firstSelectedDate["month"]!!.plus(1) < 10) "0${
-                    firstSelectedDate["month"]!!.plus(
+                if (firstSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    firstSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else firstSelectedDate["month"]!!.plus(1)
+                }" else firstSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val firstDay =
-                "${if (firstSelectedDate["day"]!! < 10) "0${firstSelectedDate["day"]}" else firstSelectedDate["day"]}"
-            val firstYear = "${firstSelectedDate["year"]}"
+                "${if (firstSelectedDate[DAY_KEY]!! < 10) "0${firstSelectedDate[DAY_KEY]}" else firstSelectedDate[DAY_KEY]}"
+            val firstYear = "${firstSelectedDate[YEAR_KEY]}"
             val secondMonth = "${
-                if (secondSelectedDate["month"]!!.plus(1) < 10) "0${
-                    secondSelectedDate["month"]!!.plus(
+                if (secondSelectedDate[MONTH_KEY]!!.plus(1) < 10) "0${
+                    secondSelectedDate[MONTH_KEY]!!.plus(
                         1
                     )
-                }" else secondSelectedDate["month"]!!.plus(1)
+                }" else secondSelectedDate[MONTH_KEY]!!.plus(1)
             }"
             val secondDay =
-                "${if (secondSelectedDate["day"]!! < 10) "0${secondSelectedDate["day"]}" else secondSelectedDate["day"]}"
-            val secondYear = "${secondSelectedDate["year"]}"
+                "${if (secondSelectedDate[DAY_KEY]!! < 10) "0${secondSelectedDate[DAY_KEY]}" else secondSelectedDate[DAY_KEY]}"
+            val secondYear = "${secondSelectedDate[YEAR_KEY]}"
             dateRangeText.text =
                 "$firstMonth/$firstDay/$firstYear - $secondMonth/$secondDay/$secondYear"
         }
@@ -407,62 +547,83 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
     }
 
-    private fun setFirstSelectedDate(tv: TextView) {
-        firstSelectedDate["year"] = selectedYear
-        firstSelectedDate["month"] = currentMonth
-        firstSelectedDate["day"] = tv.text.toString().toInt()
-    }
-
     private fun clearFirstSelectedDate() {
-        firstSelectedDate["year"] = null
-        firstSelectedDate["month"] = null
-        firstSelectedDate["day"] = null
+        firstSelectedDate[YEAR_KEY] = null
+        firstSelectedDate[MONTH_KEY] = null
+        firstSelectedDate[DAY_KEY] = null
     }
 
     private fun getFirstSelectedDate(): Date? {
         return try {
-            sdf.parse("${firstSelectedDate["month"]?.plus(1)}/${firstSelectedDate["day"]}/${firstSelectedDate["year"]}")
+            sdf.parse("${firstSelectedDate[MONTH_KEY]?.plus(1)}/${firstSelectedDate[DAY_KEY]}/${firstSelectedDate[YEAR_KEY]}")
         } catch (e: Exception) {
             null
         }
     }
 
-    private fun setSecondSelectedDate(tv: TextView) {
-        secondSelectedDate["year"] = selectedYear
-        secondSelectedDate["month"] = currentMonth
-        secondSelectedDate["day"] = tv.text.toString().toInt()
-    }
-
     private fun getSecondSelectedDate(): Date? {
         return try {
-            sdf.parse("${secondSelectedDate["month"]?.plus(1)}/${secondSelectedDate["day"]}/${secondSelectedDate["year"]}")
+            sdf.parse("${secondSelectedDate[MONTH_KEY]?.plus(1)}/${secondSelectedDate[DAY_KEY]}/${secondSelectedDate[YEAR_KEY]}")
         } catch (e: Exception) {
             null
         }
     }
 
     private fun clearSecondSelectedDate() {
-        secondSelectedDate["year"] = null
-        secondSelectedDate["month"] = null
-        secondSelectedDate["day"] = null
+        secondSelectedDate[YEAR_KEY] = null
+        secondSelectedDate[MONTH_KEY] = null
+        secondSelectedDate[DAY_KEY] = null
     }
 
     private fun drawSelectedDates() {
         Log.i(TAG, "first $firstSelectedDate")
         Log.i(TAG, "second $secondSelectedDate")
-        if (firstSelectedDate["year"] != null) {
-            if (selectedYear == firstSelectedDate["year"] && currentMonth == firstSelectedDate["month"]) {
+        if (firstSelectedDate[YEAR_KEY] != null) {
+            if (selectedYear == firstSelectedDate[YEAR_KEY] && currentMonth == firstSelectedDate[MONTH_KEY]) {
                 val tv: TextView =
-                    daysLinearLayout.findViewWithTag(firstSelectedDate["day"].toString())
+                    daysLinearLayout.findViewWithTag(firstSelectedDate[DAY_KEY].toString())
                 firstSelectedDateTextColor?.let {
                     tv.setTextColor(it)
                 }
 
                 val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.circle_event
-                    ) as LayerDrawable?
+                    eventDotGravity?.let {
+                        when (it) {
+                            Gravity.START -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_start
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.END -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.TOP -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_top
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.BOTTOM -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_bottom
+                                ) as LayerDrawable?
+                            }
+                            else -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+                        }
+                    }
                 } else {
                     ContextCompat.getDrawable(
                         context,
@@ -479,17 +640,53 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                         eventDotColor?.let { color ->
                             it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                         }
+                        eventDotColorWhenSelected?.let { color ->
+                            it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                        }
                     }
                 }
 
                 tv.background = layers
 
-                if (secondSelectedDate["year"] != null) {
+                if (secondSelectedDate[YEAR_KEY] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                        ContextCompat.getDrawable(
-                            context,
-                            R.drawable.circle_right_event
-                        ) as LayerDrawable?
+                        eventDotGravity?.let {
+                            when (it) {
+                                Gravity.START -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_start
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.END -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_end
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.TOP -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_top
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.BOTTOM -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_bottom
+                                    ) as LayerDrawable?
+                                }
+                                else -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_right_event_end
+                                    ) as LayerDrawable?
+                                }
+                            }
+                        }
                     } else {
                         ContextCompat.getDrawable(
                             context,
@@ -510,6 +707,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                             eventDotColor?.let { color ->
                                 it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                             }
+                            eventDotColorWhenSelected?.let { color ->
+                                it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                            }
                         }
                     }
 
@@ -518,19 +718,52 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
         }
 
-        if (secondSelectedDate["year"] != null) {
-            if (selectedYear == secondSelectedDate["year"] && currentMonth == secondSelectedDate["month"]) {
+        if (secondSelectedDate[YEAR_KEY] != null) {
+            if (selectedYear == secondSelectedDate[YEAR_KEY] && currentMonth == secondSelectedDate[MONTH_KEY]) {
                 val tv: TextView =
-                    daysLinearLayout.findViewWithTag(secondSelectedDate["day"].toString())
+                    daysLinearLayout.findViewWithTag(secondSelectedDate[DAY_KEY].toString())
                 secondSelectedDateTextColor?.let {
                     tv.setTextColor(it)
                 }
 
                 val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.circle_event
-                    ) as LayerDrawable?
+                    eventDotGravity?.let {
+                        when (it) {
+                            Gravity.START -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_start
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.END -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.TOP -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_top
+                                ) as LayerDrawable?
+                            }
+
+                            Gravity.BOTTOM -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_bottom
+                                ) as LayerDrawable?
+                            }
+                            else -> {
+                                ContextCompat.getDrawable(
+                                    context,
+                                    R.drawable.circle_event_end
+                                ) as LayerDrawable?
+                            }
+                        }
+                    }
                 } else {
                     ContextCompat.getDrawable(
                         context,
@@ -547,25 +780,60 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                         eventDotColor?.let { color ->
                             it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                         }
+                        eventDotColorWhenSelected?.let { color ->
+                            it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                        }
                     }
                 }
 
                 tv.background = layers
 
 
-                if (firstSelectedDate["year"] != null) {
+                if (firstSelectedDate[YEAR_KEY] != null) {
                     val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-                        ContextCompat.getDrawable(
-                            context,
-                            R.drawable.circle_left_event
-                        ) as LayerDrawable?
+                        eventDotGravity?.let {
+                            when (it) {
+                                Gravity.START -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_start
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.END -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_end
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.TOP -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_top
+                                    ) as LayerDrawable?
+                                }
+
+                                Gravity.BOTTOM -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_bottom
+                                    ) as LayerDrawable?
+                                }
+                                else -> {
+                                    ContextCompat.getDrawable(
+                                        context,
+                                        R.drawable.circle_left_event_end
+                                    ) as LayerDrawable?
+                                }
+                            }
+                        }
                     } else {
                         ContextCompat.getDrawable(
                             context,
                             R.drawable.circle_left
                         ) as LayerDrawable?
                     }
-
 
                     layers?.let {
                         highlightedDatesBackgroundColor?.let { color ->
@@ -579,6 +847,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                             eventDotColor?.let { color ->
                                 it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                             }
+                            eventDotColorWhenSelected?.let { color ->
+                                it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                            }
                         }
                     }
 
@@ -587,7 +858,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
         }
 
-        if (firstSelectedDate["year"] != null && secondSelectedDate["year"] != null) {
+        if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
             val firstDate = getFirstSelectedDate()
             val secondDate = getSecondSelectedDate()
             for (i in 1 until 43) {
@@ -615,7 +886,43 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         val resID = resources.getIdentifier("d${i}", "id", context.packageName)
         val tv = findViewById<TextView>(resID)
         val layers = if (tvsWithEvent.contains(tv.text.toString())) {
-            ContextCompat.getDrawable(context, R.drawable.selected_date_background_event) as LayerDrawable?
+            eventDotGravity?.let {
+                when (it) {
+                    Gravity.START -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_start
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.END -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_end
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.TOP -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_top
+                        ) as LayerDrawable?
+                    }
+
+                    Gravity.BOTTOM -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_bottom
+                        ) as LayerDrawable?
+                    }
+                    else -> {
+                        ContextCompat.getDrawable(
+                            context,
+                            R.drawable.selected_date_background_event_end
+                        ) as LayerDrawable?
+                    }
+                }
+            }
         } else {
             ContextCompat.getDrawable(context, R.drawable.selected_date_background) as LayerDrawable?
         }
@@ -626,6 +933,9 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
             if (tvsWithEvent.contains(tv.text.toString())) {
                 eventDotColor?.let { color ->
+                    it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
+                }
+                eventDotColorWhenHighlighted?.let { color ->
                     it.getDrawable(it.findIndexByLayerId(R.id.eventDot)).setTint(color)
                 }
             }
@@ -643,7 +953,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         for (i in 1 until 43) {
             val id: Int = resources.getIdentifier("d$i", "id", context.packageName)
             findViewById<TextView>(id).apply {
-                text = "10"
+                text = context.getString(R.string.empty_date_text)
                 visibility = View.INVISIBLE
                 tag = null
                 background = null

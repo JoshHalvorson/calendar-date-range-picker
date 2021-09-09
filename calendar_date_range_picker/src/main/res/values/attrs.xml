@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="CalendarPicker">
-        <attr name="dayTextColor" format="color"/>
-        <attr name="yearTextColor" format="color"/>
-        <attr name="firstSelectedDateTextColor" format="color"/>
-        <attr name="secondSelectedDateTextColor" format="color"/>
-        <attr name="selectedDateCircleColor" format="color"/>
-        <attr name="eventDotColor" format="color"/>
-        <attr name="highlightedDatesBackgroundColor" format="color"/>
-        <attr name="highlightedDatesTextColor" format="color"/>
-        <attr name="titleColor" format="color"/>
-        <attr name="nextMonthButtonColor" format="color"/>
-        <attr name="previousMonthButtonColor" format="color"/>
-        <attr name="yearSelectButtonColor" format="color"/>
-        <attr name="yearSelectButtonIconColor" format="color"/>
-        <attr name="yearSelectButtonTextColor" format="color"/>
-        <attr name="dateRangeTextColor" format="color"/>
+        <attr name="dayTextColor" format="color" />
+        <attr name="yearTextColor" format="color" />
+        <attr name="firstSelectedDateTextColor" format="color" />
+        <attr name="secondSelectedDateTextColor" format="color" />
+        <attr name="selectedDateCircleColor" format="color" />
+        <attr name="eventDotColor" format="color" />
+        <attr name="eventDotColorWhenHighlighted" format="color" />
+        <attr name="eventDotColorWhenSelected" format="color" />
+        <attr name="highlightedDatesBackgroundColor" format="color" />
+        <attr name="highlightedDatesTextColor" format="color" />
+        <attr name="titleColor" format="color" />
+        <attr name="nextMonthButtonColor" format="color" />
+        <attr name="previousMonthButtonColor" format="color" />
+        <attr name="yearSelectButtonColor" format="color" />
+        <attr name="yearSelectButtonIconColor" format="color" />
+        <attr name="yearSelectButtonTextColor" format="color" />
+        <attr name="dateRangeTextColor" format="color" />
         <attr name="daysOfWeekTextColor" format="color" />
 
-        <attr name="nextMonthButtonIcon" format="reference"/>
-        <attr name="previousMonthButtonIcon" format="reference"/>
+        <attr name="nextMonthButtonIcon" format="reference" />
+        <attr name="previousMonthButtonIcon" format="reference" />
+
+        <attr name="eventDotGravity">
+            <flag name="bottom" value="80" />
+            <flag name="end" value="8388613" />
+            <flag name="start" value="8388611" />
+            <flag name="top" value="48" />
+        </attr>
     </declare-styleable>
 </resources>
