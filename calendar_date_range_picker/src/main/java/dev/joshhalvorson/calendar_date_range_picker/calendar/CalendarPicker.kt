@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.forEach
 import dev.joshhalvorson.calendar_date_range_picker.R
+import dev.joshhalvorson.calendar_date_range_picker.calendar.model.CalendarEvent
 import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -73,7 +74,7 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     var eventDotGravity: Int? = null
 
     private val tvsWithEvent = mutableListOf<String>()
-    val calendarEvents = mutableListOf<Pair<String, Calendar>>()
+    val calendarEvents = mutableListOf<CalendarEvent>()
 
     init {
         inflate(context, R.layout.calendar, this)
@@ -149,23 +150,22 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
      * Adds the event to the calendarEvents object and calls initCalendar() to refresh the calendar
      * and display the events
      *
-     * @param events requires a Pair<String, Calendar> to display the event dot on the given date
-     * the calendar instance is set to, this can take one or more pairs
+     * @param events requires a CalendarEvent to display the event dot on the given date, this can
+     * take one or more objects
      *
      */
-    fun addEvents(vararg events: Pair<String, Calendar>) {
+    fun addEvents(vararg events: CalendarEvent) {
         calendarEvents.addAll(events)
         initCalendar()
     }
 
     /**
-     * Overloaded method for addEvents(Pair<...>) that just requires a list of Pair<...>
+     * Overloaded method for addEvents(CalendarEvent) that just requires a list of CalendarEvent
      *
-     * @param events requires a list of Pair<String, Calendar> to display the event dot on the given date
-     * the calendar instance is set to
+     * @param events requires a list of CalendarEvent to display the event dot on the given date
      *
      */
-    fun addEvents(events: List<Pair<String, Calendar>>) {
+    fun addEvents(events: List<CalendarEvent>) {
         calendarEvents.addAll(events)
         initCalendar()
     }
@@ -337,18 +337,25 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
     }
 
     private fun checkIfDateHasEvent(
-            dayTextView: TextView,
-            eventPair: Pair<String, Calendar>
+        dayTextView: TextView,
+        calendarEvent: CalendarEvent
     ) {
-        val calendarDate =
-            sdf.parse("${currentMonth.plus(1)}/${dayTextView.text.toString().toInt()}/${selectedYear}")
-        val eventDate =
-            sdf.parse("${eventPair.second.timeInMillis.toLocalDateTime()?.month?.value.toString()}/${eventPair.second.timeInMillis.toLocalDateTime()?.dayOfMonth.toString()}/${eventPair.second.timeInMillis.toLocalDateTime()?.year.toString()}")
+        val eventDateTime = calendarEvent.date.time.toLocalDateTime()
+        eventDateTime?.let {
+            val calendarDate =
+                sdf.parse(
+                    "${currentMonth.plus(1)}/${
+                        dayTextView.text.toString().toInt()
+                    }/${selectedYear}"
+                )
+            val eventDate =
+                sdf.parse("${eventDateTime.month.value}/${eventDateTime.dayOfMonth}/${eventDateTime.year}")
 
-        calendarDate?.let {
-            eventDate?.let {
-                if (calendarDate == eventDate) {
-                    setEventDot(dayTextView)
+            calendarDate?.let {
+                eventDate?.let {
+                    if (calendarDate == eventDate) {
+                        setEventDot(dayTextView)
+                    }
                 }
             }
         }
