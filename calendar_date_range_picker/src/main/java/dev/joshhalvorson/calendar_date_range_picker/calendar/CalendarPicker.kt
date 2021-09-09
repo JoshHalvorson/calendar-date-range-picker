@@ -89,6 +89,12 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         initYearsCalendar()
     }
 
+    /**
+     * Gets the current selected dates and returns them.
+     *
+     * @return a nullable Pair<Long, Long> that contains the timeInMillis for the start date
+     * and end date of the selected range
+     */
     fun getSelectedDates(): Pair<Long, Long>? {
         val validated = isValidated(
             dateRangeText.text.split("-")[0].replace(
@@ -109,23 +115,56 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         return null
     }
 
+    /**
+     * Sets the firstSelectedDate object to a given date, requires initCalendar() to be called
+     * afterwards to see the selected date
+     *
+     * @param year is an int for the selected year
+     * @param month is an int for the selected month (0-11)
+     * @param day is an int for the selected day
+     *
+     */
     fun setFirstSelectedDate(year: Int, month: Int, day: Int) {
         firstSelectedDate["year"] = year
         firstSelectedDate["month"] = month
         firstSelectedDate["day"] = day
     }
 
+    /**
+     * Sets the secondSelectedDate object to a given date, requires initCalendar() to be called
+     * afterwards to see the selected date
+     *
+     * @param year is an int for the selected year
+     * @param month is an int for the selected month (0-11)
+     * @param day is an int for the selected day
+     *
+     */
     fun setSecondSelectedDate(year: Int, month: Int, day: Int) {
         secondSelectedDate["year"] = year
         secondSelectedDate["month"] = month
         secondSelectedDate["day"] = day
     }
 
+    /**
+     * Adds the event to the calendarEvents object and calls initCalendar() to refresh the calendar
+     * and display the events
+     *
+     * @param events requires a Pair<String, Calendar> to display the event dot on the given date
+     * the calendar instance is set to, this can take one or more pairs
+     *
+     */
     fun addEvents(vararg events: Pair<String, Calendar>) {
         calendarEvents.addAll(events)
         initCalendar()
     }
 
+    /**
+     * Overloaded method for addEvents(Pair<...>) that just requires a list of Pair<...>
+     *
+     * @param events requires a list of Pair<String, Calendar> to display the event dot on the given date
+     * the calendar instance is set to
+     *
+     */
     fun addEvents(events: List<Pair<String, Calendar>>) {
         calendarEvents.addAll(events)
         initCalendar()
