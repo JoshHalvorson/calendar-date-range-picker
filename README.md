@@ -41,7 +41,7 @@ Currently you can add the view through xml like so
 ```
 and everything should be good to go.
 
-Then in your view code you can get the selected dates by calling ```getSelectedDates()```
+Then in your view code you can get the selected dates by calling ```calendar.getSelectedDates()```
 
 ```Kotlin
 binding.getDateRangeButton.setOnClickListener {
@@ -66,16 +66,45 @@ binding.calendarPicker.dayTextColor = Color.RED
 binding.calendarPicker.initCalendar() // REFRESHES CALENDAR AFTER CHANGING ATTRIBUTES
 ```
 
-You can use `calendar.addEvents(vararg events: Calendar)` if you need to mark important dates or show an event on specific dates (thanks @Xpjay 👍).
+You can use `calendar.addEvents(vararg events: CalendarEvent)` or `calendar.addEvents(events: List<CalendarEvent>)` if you need to mark important dates or show an event on specific dates (thanks @Xpjay 👍).
 
 ```Kotlin
 binding.calendarPicker.addEvents(
-  Pair("event  1", Calendar.getInstance()),
-  Pair("event  2", Calendar.Builder().setDate(2021, 8, 12).build()),
-  Pair("event  3", Calendar.Builder().setDate(2020, 8, 11).build()),
-  Pair("event  4", Calendar.Builder().setDate(2021, 2, 1).build()),
-  Pair("event  5", Calendar.Builder().setDate(2021, 11, 8).build()),
+  CalendarEvent(
+    eventName = "event  1",
+    eventDescription = "event 1 desc",
+    date = Calendar.getInstance().time
+  ),
+  CalendarEvent(
+    eventName = "event  2",
+    eventDescription = "event 2 desc",
+    date = Calendar.Builder().setDate(2021, 8, 19).build().time
+  ),
+  CalendarEvent(
+    eventName = "event  3",
+    eventDescription = "event 3 desc",
+    date = Calendar.Builder().setDate(2021, 8, 1).build().time
+  ),
+  CalendarEvent(
+    eventName = "event  4",
+    eventDescription = "event 4 desc",
+    date = Calendar.Builder().setDate(2021, 11, 10).build().time
+  ),
+  CalendarEvent(
+    eventName = "event  5",
+    eventDescription = "event 5 desc",
+    date = Calendar.Builder().setDate(2021, 0, 29).build().time
+  ),
 )
+```
+
+If you need to select dates programmatically the two functions `calendar.setFirstSelectedDate(year: Int, month: Int, day: Int)` and `calendar.setSecondSelectedDate(year: Int, month: Int, day: Int)`
+can do that for you.
+```Kotlin
+binding.calendarPicker.setFirstSelectedDate(year = 2021, month = 8, day = 9)
+binding.calendarPicker.setSecondSelectedDate(year = 2021, month = 8, day = 19)
+
+binding.calendarPicker.initCalendar() // REFRESHES CALENDAR AFTER SELECTING DATES
 ```
 
 The [sample](https://github.com/JoshHalvorson/calendar-date-range-picker/tree/main/sample) directory has some activity code and the xml for creating and using the calendar.
