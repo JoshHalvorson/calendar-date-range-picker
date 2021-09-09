@@ -134,8 +134,6 @@ Most of the attributes for the calendar are for changing the colors, almost ever
     app:dateRangeTextColor="@color/..."
     app:daysOfWeekTextColor="@color/..."
     app:eventDotColor="@color/..." 
-    app:eventDotColor="@color/..." 
-    app:eventDotColor="@color/..." 
     app:eventDotColorWhenHighlighted="@color/..."
     app:eventDotColorWhenSelected="@color/..."
     app:nextMonthButtonIcon="@drawable/..."
