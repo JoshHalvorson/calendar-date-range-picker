@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import dev.joshhalvorson.calendar.databinding.ActivityMainBinding
+import dev.joshhalvorson.calendar_date_range_picker.calendar.model.CalendarEvent
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -17,11 +18,31 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val eventsList = listOf(
-            Pair("event  1", Calendar.getInstance()),
-            Pair("event  2", Calendar.Builder().setDate(2021, 8, 12).build()),
-            Pair("event  3", Calendar.Builder().setDate(2020, 8, 11).build()),
-            Pair("event  4", Calendar.Builder().setDate(2021, 2, 1).build()),
-            Pair("event  5", Calendar.Builder().setDate(2021, 11, 8).build()),
+            CalendarEvent(
+                eventName = "event  1",
+                eventDescription = "event 1 desc",
+                date = Calendar.getInstance().time
+            ),
+            CalendarEvent(
+                eventName = "event  2",
+                eventDescription = "event 2 desc",
+                date = Calendar.Builder().setDate(2021, 8, 19).build().time
+            ),
+            CalendarEvent(
+                eventName = "event  3",
+                eventDescription = "event 3 desc",
+                date = Calendar.Builder().setDate(2021, 8, 1).build().time
+            ),
+            CalendarEvent(
+                eventName = "event  4",
+                eventDescription = "event 4 desc",
+                date = Calendar.Builder().setDate(2021, 11, 10).build().time
+            ),
+            CalendarEvent(
+                eventName = "event  5",
+                eventDescription = "event 5 desc",
+                date = Calendar.Builder().setDate(2021, 0, 29).build().time
+            ),
         )
         binding.calendarPicker.addEvents(eventsList)
 
@@ -30,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         binding.calendarPicker.eventDotColorWhenHighlighted = Color.GREEN
         binding.calendarPicker.setFirstSelectedDate(year = 2021, month = 8, day = 9)
         binding.calendarPicker.setSecondSelectedDate(year = 2021, month = 8, day = 19)
-        
+
         binding.calendarPicker.initCalendar()
 
         binding.getDateRangeButton.setOnClickListener {
