@@ -126,6 +126,11 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         initCalendar()
     }
 
+    fun addEvents(events: List<Pair<String, Calendar>>) {
+        calendarEvents.addAll(events)
+        initCalendar()
+    }
+
     private fun getColorAttributes(attributes: TypedArray) {
         dayTextColor = attributes.getColor(
             R.styleable.CalendarPicker_dayTextColor,
