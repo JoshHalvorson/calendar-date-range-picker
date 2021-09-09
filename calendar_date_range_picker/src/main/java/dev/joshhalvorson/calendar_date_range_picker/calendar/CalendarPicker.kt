@@ -11,27 +11,16 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.forEach
 import dev.joshhalvorson.calendar_date_range_picker.R
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Year
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) {
     companion object {
@@ -118,6 +107,18 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         }
 
         return null
+    }
+
+    fun setFirstSelectedDate(year: Int, month: Int, day: Int) {
+        firstSelectedDate["year"] = year
+        firstSelectedDate["month"] = month
+        firstSelectedDate["day"] = day
+    }
+
+    fun setSecondSelectedDate(year: Int, month: Int, day: Int) {
+        secondSelectedDate["year"] = year
+        secondSelectedDate["month"] = month
+        secondSelectedDate["day"] = day
     }
 
     fun addEvents(vararg events: Pair<String, Calendar>) {
@@ -372,10 +373,18 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             visibility = VISIBLE
             setOnClickListener {
                 if (firstSelectedDate[YEAR_KEY] != null && secondSelectedDate[YEAR_KEY] != null) {
-                    setFirstSelectedDate(this)
+                    setFirstSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
                     secondSelectedDate = mutableMapOf()
                 } else if (firstSelectedDate[YEAR_KEY] != null) {
-                    setSecondSelectedDate(this)
+                    setSecondSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
 
                     val firstDate = getFirstSelectedDate()
                     val secondDate = getSecondSelectedDate()
@@ -385,13 +394,21 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
                             if (firstDate == secondDate) {
                                 clearSecondSelectedDate()
                             } else if (secondDate.before(firstDate)) {
-                                setFirstSelectedDate(this)
+                                setFirstSelectedDate(
+                                    year = selectedYear,
+                                    month = currentMonth,
+                                    day = this.text.toString().toInt()
+                                )
                                 secondSelectedDate = mutableMapOf()
                             }
                         }
                     }
                 } else {
-                    setFirstSelectedDate(this)
+                    setFirstSelectedDate(
+                        year = selectedYear,
+                        month = currentMonth,
+                        day = this.text.toString().toInt()
+                    )
                 }
                 resetCalendar()
                 initCalendar()
@@ -479,12 +496,6 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
             }
     }
 
-    private fun setFirstSelectedDate(tv: TextView) {
-        firstSelectedDate[YEAR_KEY] = selectedYear
-        firstSelectedDate[MONTH_KEY] = currentMonth
-        firstSelectedDate[DAY_KEY] = tv.text.toString().toInt()
-    }
-
     private fun clearFirstSelectedDate() {
         firstSelectedDate[YEAR_KEY] = null
         firstSelectedDate[MONTH_KEY] = null
@@ -497,12 +508,6 @@ class CalendarPicker(context: Context, attrs: AttributeSet) : LinearLayout(conte
         } catch (e: Exception) {
             null
         }
-    }
-
-    private fun setSecondSelectedDate(tv: TextView) {
-        secondSelectedDate[YEAR_KEY] = selectedYear
-        secondSelectedDate[MONTH_KEY] = currentMonth
-        secondSelectedDate[DAY_KEY] = tv.text.toString().toInt()
     }
 
     private fun getSecondSelectedDate(): Date? {
