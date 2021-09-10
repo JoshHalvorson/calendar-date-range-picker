@@ -3,7 +3,7 @@ package dev.joshhalvorson.calendar_date_range_picker.calendar.model
 import java.util.*
 
 /**
- * Object for add events to the calendar
+ * Object for adding events to the calendar
  *
  * @param eventName name of the event as a String
  * @param eventDescription description of the event as a String
