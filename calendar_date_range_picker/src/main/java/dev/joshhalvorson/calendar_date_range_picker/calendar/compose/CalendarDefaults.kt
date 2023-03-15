@@ -4,6 +4,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import dev.joshhalvorson.calendar_date_range_picker.calendar.compose.model.BackgroundStyle
@@ -17,23 +19,25 @@ object CalendarDefaults {
         outputFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE,
         minDate: Long = Long.MIN_VALUE,
         maxDate: Long = Long.MAX_VALUE,
-        highlightedDates: List<Long> = emptyList(),
+        availableDates: List<Long> = emptyList(),
     ) = CalendarOptions(
         initialDate = initialDate,
         outputFormat = outputFormat,
         minDate = minDate,
         maxDate = maxDate,
-        highlightedDates = highlightedDates,
+        availableDates = availableDates,
     )
 
     @Composable
     fun daysOfWeek(
         type: DaysOfWeekType = DaysOfWeekType.First,
         style: TextStyle = LocalTextStyle.current,
+        allCaps: Boolean = false,
         customContent: (@Composable (String) -> Unit)? = null
     ) = DaysOfWeekOptions(
         type = type,
         style = style,
+        allCaps = allCaps,
         customContent = customContent,
     )
 
@@ -49,6 +53,11 @@ object CalendarDefaults {
             color = MaterialTheme.colorScheme.secondaryContainer,
             shape = CircleShape,
         ),
+        availableStyle: TextStyle = LocalTextStyle.current,
+        availableBackgroundStyle: BackgroundStyle = BackgroundStyle(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = CircleShape,
+        ),
         customContent: (@Composable (String) -> Unit)? = null,
     ) = DayNumberOptions(
         style = style,
@@ -56,6 +65,8 @@ object CalendarDefaults {
         selectedStyle = selectedStyle,
         selectedBackgroundStyle = selectedBackgroundStyle,
         customContent = customContent,
+        availableBackgroundStyle = availableBackgroundStyle,
+        availableStyle = availableStyle,
     )
 }
 
@@ -65,6 +76,11 @@ object CalendarRangeDefaults {
         style: TextStyle = LocalTextStyle.current,
         selectedStyle: TextStyle = LocalTextStyle.current,
         selectedBackgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+        availableStyle: TextStyle = LocalTextStyle.current,
+        availableBackgroundStyle: BackgroundStyle = BackgroundStyle(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = CircleShape,
+        ),
         customContent: (@Composable (String) -> Unit)? = null,
     ) = DayNumberOptions(
         style = style,
@@ -75,6 +91,8 @@ object CalendarRangeDefaults {
             shape = null
         ),
         customContent = customContent,
+        availableBackgroundStyle = availableBackgroundStyle,
+        availableStyle = availableStyle,
     )
 }
 
@@ -83,14 +101,14 @@ class CalendarOptions(
     private val outputFormat: DateTimeFormatter,
     private val minDate: Long,
     private val maxDate: Long,
-    private val highlightedDates: List<Long>
+    private val availableDates: List<Long>
 ) {
     @Composable
-    internal fun initialDate() = initialDate
+    internal fun initialDate(): State<LocalDate> = rememberUpdatedState(initialDate)
 
     internal fun outputFormat() = outputFormat
 
-    internal fun highlightedDates() = highlightedDates
+    internal fun availableDates() = availableDates
 
     @Composable
     internal fun minDate() = minDate
@@ -104,6 +122,8 @@ class DayNumberOptions(
     private val backgroundStyle: BackgroundStyle,
     private val selectedStyle: TextStyle,
     private val selectedBackgroundStyle: BackgroundStyle,
+    private val availableStyle: TextStyle,
+    private val availableBackgroundStyle: BackgroundStyle,
     private val customContent: (@Composable (String) -> Unit)?,
 ) {
     @Composable
@@ -120,11 +140,18 @@ class DayNumberOptions(
 
     @Composable
     internal fun selectedBackgroundStyle() = selectedBackgroundStyle
+
+    @Composable
+    internal fun availableStyle() = availableStyle
+
+    @Composable
+    internal fun availableBackgroundStyle() = availableBackgroundStyle
 }
 
 class DaysOfWeekOptions(
     private val type: DaysOfWeekType,
     private val style: TextStyle,
+    private val allCaps: Boolean,
     private val customContent: (@Composable (String) -> Unit)?,
 ) {
     @Composable
@@ -135,6 +162,9 @@ class DaysOfWeekOptions(
 
     @Composable
     internal fun customContent() = customContent
+
+    @Composable
+    internal fun allCaps() = allCaps
 }
 
 enum class DaysOfWeekType {

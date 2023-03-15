@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.joshhalvorson.calendar_date_range_picker.calendar.CalendarUtils
 import dev.joshhalvorson.calendar_date_range_picker.calendar.compose.model.DateRange
@@ -31,11 +32,11 @@ fun CalendarPicker(
     calendarOptions: CalendarOptions = CalendarDefaults.calendarOptions(),
     daysOfWeekOptions: DaysOfWeekOptions = CalendarDefaults.daysOfWeek(),
     dayNumberOptions: DayNumberOptions = CalendarDefaults.dayNumber(),
-    headerContent: @Composable (PickedDate) -> Unit = {
+    headerContent: @Composable (pickedDate: PickedDate, currentMonthAndYear: String) -> Unit = { pickedDate, currentMonthAndYear ->
         Column {
             Text(text = "Select Date", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = it.formattedDate.value)
+            Text(text = pickedDate.formattedDate.value)
             Spacer(modifier = Modifier.height(8.dp))
             Divider()
             Spacer(modifier = Modifier.height(12.dp))
@@ -87,7 +88,7 @@ fun CalendarRangePicker(
         dayNumberOptions = dayNumberOptions,
         onDateClicked = { },
         onDateRangeClicked = onDateRangeClicked,
-        headerContent = { },
+        headerContent = { _, _ -> },
         dateRangeHeaderContent = headerContent
     )
 }
@@ -95,7 +96,7 @@ fun CalendarRangePicker(
 @Composable
 private fun BaseCalendarPicker(
     viewModel: CalendarViewModel,
-    headerContent: @Composable (PickedDate) -> Unit,
+    headerContent: @Composable (pickedDate: PickedDate, currentMonthAndYear: String) -> Unit,
     dateRangeHeaderContent: @Composable (DateRange) -> Unit,
     calendarType: CalendarType,
     calendarOptions: CalendarOptions,
@@ -109,8 +110,8 @@ private fun BaseCalendarPicker(
     val dateRange by viewModel.dateRange.collectAsState()
     val pickedDate by viewModel.pickedDate.collectAsState()
 
-    val month = calendarOptions.initialDate().monthValue - 1
-    val year = calendarOptions.initialDate().year
+    val month = calendarOptions.initialDate().value.monthValue - 1
+    val year = calendarOptions.initialDate().value.year
     val daysInCurrentMonth = CalendarUtils.getDaysInMonth(month, year) ?: return
     val daysList: MutableList<Int> = mutableListOf<Int>().apply {
         for (d in 1..daysInCurrentMonth) {
@@ -134,7 +135,7 @@ private fun BaseCalendarPicker(
     MaterialTheme {
         Column {
             if (calendarType == CalendarType.Single) {
-                headerContent(pickedDate)
+                headerContent(pickedDate, "${CalendarUtils.Constants.INT_MONTHS_TO_STRING_MONTHS[month]} $year")
             } else {
                 dateRangeHeaderContent(dateRange)
             }
@@ -177,7 +178,7 @@ private fun Calendar(
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 350.dp, max = 450.dp),
+            .height(300.dp),
         columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -262,8 +263,8 @@ private fun Date(
     dayNumberOptions: DayNumberOptions,
     onDateClicked: (LocalDate) -> Unit
 ) {
-    val month = calendarOptions.initialDate().monthValue - 1
-    val year = calendarOptions.initialDate().year
+    val month = calendarOptions.initialDate().value.monthValue - 1
+    val year = calendarOptions.initialDate().value.year
     val itemDate = LocalDate.of(year, month + 1, date)
     val minDate =
         if (calendarOptions.minDate() != Long.MIN_VALUE) LocalDate.ofEpochDay(calendarOptions.minDate()) else LocalDate.MIN
@@ -273,9 +274,11 @@ private fun Date(
         (itemDate.isAfter(minDate) || itemDate.isEqual(minDate)) && (itemDate.isBefore(maxDate) || itemDate.isEqual(
             maxDate
         ))
-    val isHighlightedDate = calendarOptions.highlightedDates().contains(itemDate.toEpochDay())
+    val isAvailableDate = calendarOptions.availableDates().contains(itemDate.toEpochDay())
     val backgroundStyle = if (isSelectedDate) {
         dayNumberOptions.selectedBackgroundStyle()
+    } else if (isAvailableDate) {
+        dayNumberOptions.availableBackgroundStyle()
     } else {
         dayNumberOptions.backgroundStyle()
     }
@@ -321,13 +324,13 @@ private fun Date(
         LocalTextStyle.current.copy(color = LocalContentColor.current.copy(alpha = .5f))
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (isSelectedDate) {
-            Box(modifier = backgroundModifier.size(60.dp))
+        if (isSelectedDate || isAvailableDate) {
+            Box(modifier = backgroundModifier.size(30.dp))
         }
 
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(30.dp)
                 .clip(shape)
                 .clickable(
                     interactionSource = MutableInteractionSource(),
@@ -342,16 +345,19 @@ private fun Date(
         if (daysOfWeekOptions.customContent() == null) {
             Text(
                 text = "$date",
+                fontSize = 12.sp,
                 style = if (isEnabledDate) {
                     if (isSelectedDate) {
                         dayNumberOptions.selectedStyle()
+                    } else if (isAvailableDate) {
+                        dayNumberOptions.availableStyle()
                     } else {
                         dayNumberOptions.style()
                     }
                 } else {
                     disabledStyle
                 },
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         } else {
             dayNumberOptions.customContent()?.invoke("$date")
@@ -371,7 +377,8 @@ private fun DayOfWeek(
     }
     if (daysOfWeekOptions.customContent() == null) {
         Text(
-            text = dayText,
+            text = if (daysOfWeekOptions.allCaps()) dayText.uppercase() else dayText,
+            fontSize = 12.sp,
             style = daysOfWeekOptions.style(),
             textAlign = TextAlign.Center
         )
